@@ -119,8 +119,8 @@ cancer %>%
   geom_cat(aes(x=center, y = low_pred), cat = "pusheen", size = 0.75, position = position_dodge(width = .9)) +
   geom_cat(aes(x=center, y = high_pred), cat = "pusheen", size = 0.75, position = position_dodge(width = .9)) +
   #scale_color_manual(values=wes_palette(n=2, name="IsleofDogs1")) +
-  scale_fill_manual(values=wes_palette(n=3, name="Darjeeling1"))
-
+  scale_fill_manual(values=wes_palette(n=3, name="Darjeeling1")) +
+  scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1))
 
 
 
