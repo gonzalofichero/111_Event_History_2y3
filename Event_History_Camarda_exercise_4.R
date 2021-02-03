@@ -82,23 +82,23 @@ AIC(m.cancer.age, m.cancer.mal, m.cancer.center,
 # The full model and the one with type of tumor and center performs better
 # By parsimony, selecting the model with less parameters: m.cancer.mal.center
 
+# But...
+anova(m.cancer.age, m.cancer.mal, m.cancer.center, 
+      m.cancer.age.mal, m.cancer.mal.center, m.cancer.center.age,
+      m.cancer.full, test = "Chisq")
+# The m.cancer.mal.center doesn't explain... so the full model it is
+
 
 
 #### 5. Plot the probability of dying from the selected model by the significant covariates. Add 95% confidence intervals ####
 
-
-# Vector with all possible values:
-cases <- data.frame(Malignant=c("no", "yes","no", "yes","no", "yes"), 
-                    center=c("Boston", "Boston", "Glamorgan", "Glamorgan", "Tokyo", "Tokyo"))
-
-
 # Saving predictions inside vector
-p.cancer <- predict(m.cancer.mal.center, cases, type="response", se.fit = TRUE)
+p.cancer <- predict(m.cancer.full, type="response", se.fit = TRUE)
 
 # All together now...
-prediction <- cbind(cases, p.cancer$fit, p.cancer$se.fit)
-names(prediction)[3] <- "model.prob"
-names(prediction)[4] <- "prob.se"
+prediction <- cbind(cancer, p.cancer$fit, p.cancer$se.fit)
+names(prediction)[6] <- "model.prob"
+names(prediction)[7] <- "prob.se"
 
 # Calculating lower and upper limit of prediction
 prediction %>% 
@@ -107,21 +107,13 @@ prediction %>%
 
 
 # Putting everything together inside the same plot
-cancer %>% 
+prediction %>% 
   mutate(survivor = yes/(yes+no)) %>% 
-  select(center, Malignant, survivor) %>%
-  group_by(center, Malignant) %>% 
-  summarise(avg_survivor = mean(survivor)) %>% 
-  left_join(prediction, by=c("Malignant", "center")) %>% 
-  ggplot(aes(x=center, y = avg_survivor, fill = Malignant)) + geom_bar(position="dodge", stat="identity") +
-  #geom_point(aes(x=center, y = model.prob, color = Malignant), position = position_dodge(width = .9)) +
-  geom_cat(aes(x=center, y = model.prob), cat = "grumpy", size = 1.5, position = position_dodge(width = .9)) +
-  geom_cat(aes(x=center, y = low_pred), cat = "pusheen", size = 0.75, position = position_dodge(width = .9)) +
-  geom_cat(aes(x=center, y = high_pred), cat = "pusheen", size = 0.75, position = position_dodge(width = .9)) +
-  #scale_color_manual(values=wes_palette(n=2, name="IsleofDogs1")) +
+  ggplot(aes(x=age, y = survivor, fill = center)) + geom_bar(position="dodge", stat="identity") +
+  #geom_cat(aes(x=age, y = model.prob), cat = "grumpy", size = 1.5, position = position_dodge(width = .9)) +
+  #geom_cat(aes(x=age, y = low_pred), cat = "pusheen", size = 0.75, position = position_dodge(width = .9)) +
+  #geom_cat(aes(x=age, y = high_pred), cat = "pusheen", size = 0.75, position = position_dodge(width = .9)) +
   scale_fill_manual(values=wes_palette(n=3, name="Darjeeling1")) +
-  scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1))
-
-
-
+  scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1)) +
+  facet_wrap(~ Malignant)
 
