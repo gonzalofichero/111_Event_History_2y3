@@ -93,11 +93,17 @@ cases <- data.frame(Malignant=c("no", "yes","no", "yes","no", "yes"),
 
 
 # Saving predictions inside vector
-p.cancer <- predict(m.cancer.mal.center, cases, type="response")
+p.cancer <- predict(m.cancer.mal.center, cases, type="response", se.fit = TRUE)
 
 # All together now...
-prediction <- cbind(cases, p.cancer)
+prediction <- cbind(cases, p.cancer$fit, p.cancer$se.fit)
 names(prediction)[3] <- "model.prob"
+names(prediction)[4] <- "prob.se"
+
+# Calculating lower and upper limit of prediction
+prediction %>% 
+  mutate(low_pred = model.prob - 1.96 * prob.se,
+         high_pred = model.prob + 1.96 * prob.se) -> prediction
 
 
 # Putting everything together inside the same plot
@@ -110,6 +116,8 @@ cancer %>%
   ggplot(aes(x=center, y = avg_survivor, fill = Malignant)) + geom_bar(position="dodge", stat="identity") +
   #geom_point(aes(x=center, y = model.prob, color = Malignant), position = position_dodge(width = .9)) +
   geom_cat(aes(x=center, y = model.prob), cat = "grumpy", size = 1.5, position = position_dodge(width = .9)) +
+  geom_cat(aes(x=center, y = low_pred), cat = "pusheen", size = 0.75, position = position_dodge(width = .9)) +
+  geom_cat(aes(x=center, y = high_pred), cat = "pusheen", size = 0.75, position = position_dodge(width = .9)) +
   #scale_color_manual(values=wes_palette(n=2, name="IsleofDogs1")) +
   scale_fill_manual(values=wes_palette(n=3, name="Darjeeling1"))
 
