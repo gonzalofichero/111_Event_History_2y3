@@ -1,6 +1,7 @@
 #### Importing packages ####
 library(tidyverse)
 library(wesanderson)
+library(ggcats)
 
 #### 1. Load the data and quickly present a possible research questions with the help of descriptive statistics ####
 cancer <- read.table("CancerBishopEtAl1975.txt", header=TRUE, sep=",")
@@ -38,26 +39,79 @@ cancer %>%
 #### 2. Model these data to answer the question (do not use any interaction) ####
 
 # I'm taking out the intercept so reading the betas is easier
-# The base category is NO malignant tumor
-m.cancer <- glm(cbind(yes,no) ~ age + Malignant + center - 1, family=binomial(link=logit), data=cancer)
-summary(m.cancer)
 
-# All p-values below 5%. GOOD
-
-
-
-#### 3. Select the most suitable model. Why do you select it? ####
-
-# Let's run model only with age, then only with malignancy and the compared these 2 with the complete model
-# Using AIC to compare between the models: the lower the better
-
+##### Models with 1 variable #####
 m.cancer.age <- glm(cbind(yes,no) ~ age - 1, family=binomial(link=logit), data=cancer)
 m.cancer.mal <- glm(cbind(yes,no) ~ Malignant - 1, family=binomial(link=logit), data=cancer)
 m.cancer.center <- glm(cbind(yes,no) ~ center - 1, family=binomial(link=logit), data=cancer)
 
 
-AIC(m.cancer.age, m.cancer.mal, m.cancer.center, m.cancer)
-# The complete model performs better
+summary(m.cancer.age)
+summary(m.cancer.mal)
+summary(m.cancer.center)
+# Everything looks significative in a 1by1 basis
+
+
+##### Models with 2 variables #####
+m.cancer.age.mal <- glm(cbind(yes,no) ~ age +  Malignant - 1, family=binomial(link=logit), data=cancer)
+m.cancer.mal.center <- glm(cbind(yes,no) ~ Malignant + center - 1, family=binomial(link=logit), data=cancer)
+m.cancer.center.age <- glm(cbind(yes,no) ~ center + age - 1, family=binomial(link=logit), data=cancer)
+
+summary(m.cancer.age.mal)
+summary(m.cancer.mal.center)
+summary(m.cancer.center.age)
+
+# Combination of Center + Age makes ages look significance
+
+##### Full model #####
+# The base category is NO malignant tumor
+m.cancer.full <- glm(cbind(yes,no) ~ age + Malignant + center - 1, family=binomial(link=logit), data=cancer)
+summary(m.cancer.full)
+
+# All p-values below 5%, except for Glamorgan. GOOD
+
+
+#### 3. Select the most suitable model. Why do you select it? ####
+#### 4. Present a table with the Akaike Information Criterion (AIC) for all estimated models. ####
+
+# Using AIC to compare between the models: the lower the better
+
+AIC(m.cancer.age, m.cancer.mal, m.cancer.center, 
+    m.cancer.age.mal, m.cancer.mal.center, m.cancer.center.age,
+    m.cancer.full)
+# The full model and the one with type of tumor and center performs better
+# By parsimony, selecting the model with less parameters: m.cancer.mal.center
+
+
+
+#### 5. Plot the probability of dying from the selected model by the significant covariates. Add 95% confidence intervals ####
+
+
+# Vector with all possible values:
+cases <- data.frame(Malignant=c("no", "yes","no", "yes","no", "yes"), 
+                    center=c("Boston", "Boston", "Glamorgan", "Glamorgan", "Tokyo", "Tokyo"))
+
+
+# Saving predictions inside vector
+p.cancer <- predict(m.cancer.mal.center, cases, type="response")
+
+# All together now...
+prediction <- cbind(cases, p.cancer)
+names(prediction)[3] <- "model.prob"
+
+
+# Putting everything together inside the same plot
+cancer %>% 
+  mutate(survivor = yes/(yes+no)) %>% 
+  select(center, Malignant, survivor) %>%
+  group_by(center, Malignant) %>% 
+  summarise(avg_survivor = mean(survivor)) %>% 
+  left_join(prediction, by=c("Malignant", "center")) %>% 
+  ggplot(aes(x=center, y = avg_survivor, fill = Malignant)) + geom_bar(position="dodge", stat="identity") +
+  #geom_point(aes(x=center, y = model.prob, color = Malignant), position = position_dodge(width = .9)) +
+  geom_cat(aes(x=center, y = model.prob), cat = "grumpy", size = 1.5, position = position_dodge(width = .9)) +
+  #scale_color_manual(values=wes_palette(n=2, name="IsleofDogs1")) +
+  scale_fill_manual(values=wes_palette(n=3, name="Darjeeling1"))
 
 
 
