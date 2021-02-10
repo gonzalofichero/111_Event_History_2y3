@@ -52,6 +52,6 @@ ini_par <- c(1,10,1,1)
 opt.weibull <- optim(ini_par, logL.W, event=breast$event,
                       observation=breast$exit,
                       x1=breast$x1, x2=breast$x2,
-                      control=list(maxit=10^3))
+                      control=list(maxit=10^3), hessian=T)
 
 
