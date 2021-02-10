@@ -97,8 +97,8 @@ loghazard <- function(t,x1,x2) {
   ## regression part
   Xbeta <- X%*%beta
   
-  #lh <- (log(a.hat)-log(t)+a.hat*log(t)-a.hat*log(b.hat)+Xbeta)
-  lh <- (log(a.hat)+b.hat*t+Xbeta)
+  lh <- (log(a.hat)-log(t)+a.hat*log(t)-a.hat*log(b.hat)+Xbeta)
+  #lh <- (log(a.hat)+b.hat*t+Xbeta)
   return(lh)
 }
 # Check
