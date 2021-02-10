@@ -55,3 +55,85 @@ opt.weibull <- optim(ini_par, logL.W, event=breast$event,
                       control=list(maxit=10^3), hessian=T)
 
 
+# Optimized parameters
+a.hat <- opt.weibull$par[1]
+b.hat <- opt.weibull$par[2]
+beta1.hat <- opt.weibull$par[3]
+beta2.hat <- opt.weibull$par[4]
+
+
+
+#### Q2. Provide a table with estimated coefficients and 95% confidence interval. Are the three group statistically diferent? ####
+
+V <- solve(opt.weibull$hessian)
+
+
+# CI for a and b (assuming 1-alpha=95%)
+se.a <- sqrt(diag(V))[1]
+se.b <- sqrt(diag(V))[2]
+
+# CI for \beta_1 and \beta_2 (assuming 1-alpha=95%)
+se.beta1 <- sqrt(diag(V))[3]
+se.beta2 <- sqrt(diag(V))[4]
+
+# Confidence intervals for all parameters
+c(a.hat - 1.96*se.a , a.hat + 1.96*se.a) 
+c(b.hat - 1.96*se.b , b.hat + 1.96*se.b)
+c(beta1.hat - 1.96*se.beta1 , beta1.hat + 1.96*se.beta1)
+c(beta2.hat - 1.96*se.beta2 , beta2.hat + 1.96*se.beta2)
+
+
+
+#### Q3. Evaluate and plot the log-hazard for the three prognostic groups over the following times: #### 
+
+t <- seq(min(breast$exit), max(breast$exit), length=100)
+
+# Creating the loghazard for the specific found parameters
+loghazard <- function(t,x1,x2) {
+  ## regression coefficients
+  beta <- c(beta1.hat, beta2.hat)
+  ## design matrix
+  X <- cbind(x1, x2)
+  ## regression part
+  Xbeta <- X%*%beta
+  
+  #lh <- (log(a.hat)-log(t)+a.hat*log(t)-a.hat*log(b.hat)+Xbeta)
+  lh <- (log(a.hat)+b.hat*t+Xbeta)
+  return(lh)
+}
+# Check
+loghazard(2, 0, 0)
+
+# Creating data frame of simulation
+data.frame(cbind(t, rep(0,100), rep(0,100), rep("Good", 100))) -> good.w
+names(good.w) <- c("t", "x1", "x2", "group")
+
+data.frame(cbind(t, rep(1,100), rep(0,100), rep("Medium", 100))) -> medium.w
+names(medium.w) <- c("t", "x1", "x2", "group")
+
+data.frame(cbind(t, rep(0,100), rep(1,100), rep("Poor", 100))) -> poor.w
+names(poor.w) <- c("t", "x1", "x2", "group")
+
+
+# All together
+rbind(good.w, medium.w, poor.w) -> simul.weibull
+
+# All to numeric in new dataframe
+indx <- sapply(simul.weibull, is.factor)
+simul.weibull.2 <- cbind(data.frame(lapply(simul.weibull[indx,1:3], function(x) as.numeric(as.character(x)))),simul.weibull$group)
+
+
+# Running the function of the loghazard
+for (i in 1:300){
+  simul.weibull.2$logh[i] <- loghazard(simul.weibull.2$t[i], simul.weibull.2$x1[i], simul.weibull.2$x2[i])
+}
+names(simul.weibull.2) <- c("t", "x1", "x2", "group", "logh")
+
+# Plotting
+simul.weibull.2 %>% 
+  ggplot(aes(x=t, y=logh, color=group)) + geom_line() +
+  xlim(1.5,2) + ylim(100,150)
+
+
+
+  
