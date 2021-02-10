@@ -19,12 +19,12 @@ breast %>%
 # Generating a logL for Weibull: 2 parameters + 2 covariates (binary)
 
 # Loglikelihood function with right-censoring
-logL.W <- function(para, entry, exit, observation,x1,x2){
+logL.W <- function(ini_par, entry, exit, observation,x1,x2){
   ## Weibull parameters
-  a <- par[1]
-  b <- par[2]
+  a <- ini_par[1]
+  b <- ini_par[2]
   ## regression coefficients
-  beta <- par[3:4]
+  beta <- ini_par[3:4]
   ## design matrix
   X <- cbind(x1, x2)
   ## regression part
@@ -34,15 +34,14 @@ logL.W <- function(para, entry, exit, observation,x1,x2){
   ## In right-censoring we have the following LogL:
   # \sum_{i=1}^{n} (\delta_i * log(h(y_i)) - H(y_i))
   # here we have the event in the exact different position: so, we change delta to (1-delta)
+  # Being H(t) = (t/b)^a
   
-  
-  a <- para[1]
-  b <- para[2]
-  f1 <- para[3]
-  f2 <- para[4]
-  
-  logL <- sum(log(a)-log(observation)+a*log(observation)-a*log(b)+f1*x1+f2*x2)
-  
+  # So, first we have the observations for those censored:
+  lht <- ((1-event) * (log(a)-log(observation)+a*log(observation)-a*log(b)+Xbeta))
+  # Now, the hazard for those that died:
+  H0y <- ((observation/b)^a) * expXbeta
+  # Everything together
+  logL <-   -sum( lht - H0y )
   return(logL)
 }
 
@@ -50,6 +49,9 @@ logL.W <- function(para, entry, exit, observation,x1,x2){
 ini_par <- c(1,10,1,1)
 
 # Optimization
-opt.weibull <- optim()
+opt.weibull <- optim(ini_par, logL.W, event=breast$event,
+                      observation=breast$exit,
+                      x1=breast$x1, x2=breast$x2,
+                      control=list(maxit=10^3))
 
 
