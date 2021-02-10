@@ -19,7 +19,7 @@ breast %>%
 # Generating a logL for Weibull: 2 parameters + 2 covariates (binary)
 
 # Loglikelihood function with right-censoring
-logL.W <- function(ini_par, entry, exit, observation,x1,x2){
+logL.W <- function(ini_par, event, observation, x1, x2){
   ## Weibull parameters
   a <- ini_par[1]
   b <- ini_par[2]
@@ -37,9 +37,9 @@ logL.W <- function(ini_par, entry, exit, observation,x1,x2){
   # Being H(t) = (t/b)^a
   
   # So, first we have the observations for those censored:
-  lht <- ((1-event) * (log(a)-log(observation)+a*log(observation)-a*log(b)+Xbeta))
+  lht <- (event * (log(a)-log(observation)+a*log(observation)-a*log(b)+Xbeta))
   # Now, the hazard for those that died:
-  H0y <- ((observation/b)^a) * expXbeta
+  H0y <- (((observation/b)^a) * expXbeta)
   # Everything together
   logL <-   -sum( lht - H0y )
   return(logL)
