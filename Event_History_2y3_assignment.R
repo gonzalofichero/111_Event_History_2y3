@@ -1,15 +1,20 @@
 #### Loading libraries ####
 library(tidyverse)
 library(survival)
+library(stargazer)
 
 
-#### Importing data ####
+
+#### Exercise 1 ####
+
+
+##### Importing data #####
 breast <- read.table("breast.txt")
 
 glimpse(breast)
 
 
-#### Q1. Estimate a proportional hazard model with a Weibull distribution as baseline. ####
+##### Q1. Estimate a proportional hazard model with a Weibull distribution as baseline. #####
 
 # Use patient with group=Good as reference
 breast %>% 
@@ -63,7 +68,7 @@ beta2.hat <- opt.weibull$par[4]
 
 
 
-#### Q2. Provide a table with estimated coefficients and 95% confidence interval. Are the three group statistically diferent? ####
+##### Q2. Provide a table with estimated coefficients and 95% confidence interval. Are the three group statistically diferent? #####
 
 V <- solve(opt.weibull$hessian)
 
@@ -84,7 +89,7 @@ c(beta2.hat - 1.96*se.beta2 , beta2.hat + 1.96*se.beta2)
 
 
 
-#### Q3. Evaluate and plot the log-hazard for the three prognostic groups over the following times: #### 
+##### Q3. Evaluate and plot the log-hazard for the three prognostic groups over the following times: ##### 
 
 t <- seq(min(breast$exit), max(breast$exit), length=100)
 
@@ -136,4 +141,86 @@ simul.weibull.2 %>%
 
 
 
-  
+#### Exercise 2 ####
+
+##### Importing data #####
+students <- read.table("students.txt", header = T)
+
+glimpse(students)
+
+# Setting Event to numeric
+students$event <- as.numeric(students$event)
+
+##### Q1. Tabulate a frequency distribution of the duration variable or show this information in a barplot. Are tied observations rare in this data set? #####
+students %>% 
+  ggplot(aes(x=dur)) + geom_histogram(bins = max(students$dur)) +
+  facet_grid(~subj)
+
+
+##### Q2. Estimate a discrete PH model #####
+
+##### Q2.A. Create a new variable quarter, which measures intervals of 3 months' length #####
+students$quarter <- cut(students$dur, breaks = seq(0,24,by=3),
+                        include.lowest = TRUE, labels = F)
+
+
+##### Q2.B. Set up the data set appropriately so that you can estimate a discrete-time PH model. Provide the dimensions of the new augmented dataset. #####
+
+students$id <- 1:length(students$dur)
+
+# Taking from Giancarlo's code. But there has to be a better way of doing it...
+i <- 1
+st2 <- cbind(rep(students$id[i], students$quarter[i]),
+             rep(students$quarter[i], students$quarter[i]),
+             rep(students$sex[i], students$quarter[i]),
+             rep(students$subj[i], students$quarter[i]),
+             1:students$quarter[i],
+             c(rep(0, students$quarter[i]-1), students$event[i]))
+
+for(i in 2:nrow(students)){
+  st2 <- rbind(st2,
+                 cbind(rep(students$id[i], students$quarter[i]),
+                       rep(students$quarter[i], students$quarter[i]),
+                       rep(students$sex[i], students$quarter[i]),
+                       rep(students$subj[i], students$quarter[i]),
+                       1:students$quarter[i],
+                       c(rep(0, students$quarter[i]-1), students$event[i])
+                 ))
+}
+
+
+st3 <- as.data.frame(st2)
+names(st3) <- c("id","quarter","sex","subj","quarter","event")
+head(st3)
+
+# Check
+glimpse(st3)
+
+
+##### Q3. Estimate the model where we have a discrete unspecified baseline and where sex and subject interact #####
+
+# Estimate both the logistic and the cloglog version of the model and create a table for comparing the estimated coefficients.
+
+# Factorizing linear predictors
+
+st3$subj <- as.factor(st3$subj)
+st3$sex <- as.factor(st3$sex)
+st3$quarter <- as.factor(st3$quarter)
+
+###### Logistic Regression ######
+logistic <- glm(event ~ quarter + sex*subj,
+                family = binomial,
+                data = st3)
+
+###### CLogLog Regression ######
+cloglog <- glm(event ~ quarter + sex*subj,
+               family = binomial(link=cloglog),
+               data = st3)
+
+summary(logistic)
+summary(cloglog)
+
+
+######  Creating table of results ###### 
+stargazer(logistic, cloglog)
+
