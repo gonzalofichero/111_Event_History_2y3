@@ -18,8 +18,8 @@ glimpse(breast)
 
 # Use patient with group=Good as reference
 breast %>% 
-  mutate(x1 = as.factor(ifelse(group == "Medium", 1, 0)),
-         x2 = as.factor(ifelse(group == "Poor", 1, 0))) -> breast
+  mutate(x1 = ifelse(group == "Medium", 1, 0),
+         x2 = ifelse(group == "Poor", 1, 0)) -> breast
 
 # Generating a logL for Weibull: 2 parameters + 2 covariates (binary)
 
@@ -136,8 +136,7 @@ names(simul.weibull.2) <- c("t", "x1", "x2", "group", "logh")
 
 # Plotting
 simul.weibull.2 %>% 
-  ggplot(aes(x=t, y=logh, color=group)) + geom_line() +
-  xlim(1.5,2) + ylim(100,150)
+  ggplot(aes(x=t, y=logh, color=group)) + geom_line()
 
 
 
