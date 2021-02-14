@@ -351,7 +351,15 @@ c(c_hat - 1.96*se.c , c_hat + 1.96*se.c)
 
 ##### Q3. Plot estimated rates in 1950 along with the fitted rates from !1 and the 95% confidence interval #####
 
+real.swed_rate <- swed.data.3090$Deaths/ swed.data.3090$Exposure
 
+mu.hat <- c_hat + a_hat * exp(b_hat*swed.data.3090$Age) 
+
+plot(swed.data.3090$Age, real.swed_rate, ylab="mu", main="Fitted Rates") 
+lines(swed.data.3090$Age, mu.hat, col=3, lwd=2) 
+legend("topleft", legend=c("Observed", "Fitted"), 
+       col=c(1,3), lwd=c(1,1), 
+       lty=c(1,1), pch=c(1,1))
 
 
 
