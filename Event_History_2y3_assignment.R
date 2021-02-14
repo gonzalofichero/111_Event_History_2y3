@@ -302,7 +302,7 @@ make.mle <- optim(para,
                   Exposure=swed.data.3090$Exposure, 
                   control=list(fnscale=-1),
                   #hessian = T,
-                  method="BFGS")
+                  method="Nelder-Mead")
 
 make.mle
 
@@ -318,8 +318,18 @@ b_hat <- make.mle$par[2]
 c_hat <- make.mle$par[3]
 
 
-# Build variance-covariance from Hessian 
-V <- solve(-make.mle$hessian)      # inverse of negative Hessian
+# Build variance-covariance from Hessian
+# Taking the Hessian with nlme library
+library(nlme)
+
+H <- fdHess(pars=make.mle$par, 
+            fun=lnLmakeham,
+            Age=swed.data.3090$Age, 
+            Death=swed.data.3090$Deaths, 
+            Exposure=swed.data.3090$Exposure)$Hessian
+
+
+V <- solve(-H) # inverse of negative Hessian
 
 
 #  square root of diagonal elements are the s.e. of a and b and c
