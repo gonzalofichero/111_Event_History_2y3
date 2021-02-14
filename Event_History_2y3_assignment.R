@@ -351,15 +351,65 @@ c(c_hat - 1.96*se.c , c_hat + 1.96*se.c)
 
 ##### Q3. Plot estimated rates in 1950 along with the fitted rates from !1 and the 95% confidence interval #####
 
+# Taking the empirical rate
 real.swed_rate <- swed.data.3090$Deaths/ swed.data.3090$Exposure
 
+# Generating the hazard rate with optimized parameters
 mu.hat <- c_hat + a_hat * exp(b_hat*swed.data.3090$Age) 
 
+# Calculating CIs for the optimized rate: delta-method
+# Gradients:
+g.h.makeham <- function(t){
+  
+  # Optimized parameters
+  a_hat <-  make.mle$par[1]
+  b_hat <-  make.mle$par[2]
+  c_hat <-  make.mle$par[3]
+  
+  # Var-Cov matrix from optimization
+  V <- solve(-H)
+  
+  # Gradient for parameter a for h(t) for Makeham:
+  g.a <- exp(b_hat * t)
+  # Gradient for parameter b for h(t) for Makeham:
+  g.b <- a_hat * exp(b_hat * t) * t
+  # Gradient for parameter c for h(t) for Makeham:
+  g.c <- 1
+  
+  # Putting it together
+  gradient <- c(g.a, g.b, g.c)
+  
+  # Matrix multiplication:
+  se.q <- sqrt( t(gradient) %*% V %*% gradient)
+  
+  # Getting back what we need
+  return(se.q)
+  
+}
+
+# Create empty vector to fill
+se.q.gradient <- rep(NA,length(swed.data.3090$Age))
+
+# Loop through the possible values of t and apply the previous function to calculate
+# standard errors for h(t) Makeham based on optimization
+for (t in 1:length(swed.data.3090$Age)) {
+  
+  se.q.gradient[t] <- g.h.makeham(t+29)
+  
+}
+
+# Creating low and high CI for h(t) hat
+CI.make.low <- mu.hat - 1.96 * se.q.gradient
+CI.make.high <- mu.hat + 1.96 * se.q.gradient
+
+# Putting everything together
 plot(swed.data.3090$Age, real.swed_rate, ylab="mu", main="Fitted Rates") 
 lines(swed.data.3090$Age, mu.hat, col=3, lwd=2) 
-legend("topleft", legend=c("Observed", "Fitted"), 
-       col=c(1,3), lwd=c(1,1), 
-       lty=c(1,1), pch=c(1,1))
+lines(swed.data.3090$Age, CI.make.low, col=2, lwd=2)
+lines(swed.data.3090$Age, CI.make.low, col=2, lwd=2)
+legend("topleft", legend=c("Observed", "Fitted", "CI"), 
+       col=c(1,3,2), lwd=c(1,1,1), 
+       lty=c(1,1,1), pch=c(1,1,1))
 
 
 
