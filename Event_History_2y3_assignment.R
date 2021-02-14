@@ -241,3 +241,41 @@ plot(x,h1,col=1, pch=1,
      ylim = c(0,0.55),
      xlab = "time", ylab="discrete hazard",main="hazard comparison")
 points(h2,col=2,pch=2)
+
+
+
+#### Exercise 3 ####
+
+##### Importing data #####
+swed_dead <- as.data.frame(read.table("SWIdeaths.txt", header = T))
+swed_expo <- as.data.frame(read.table("SWIexposures.txt", header = T))
+
+
+glimpse(swed_dead)
+glimpse(swed_expo)
+
+##### Data Wrangling #####
+swed_dead.2 <- swed_dead %>% 
+  pivot_longer(cols = starts_with("X"), names_to = "Year", names_prefix = "X", values_to = "Deaths", values_drop_na = F) 
+
+swed_expo.2 <- swed_expo %>% 
+  pivot_longer(cols = starts_with("X"), names_to = "Year", names_prefix = "X", values_to = "Exposure", values_drop_na = F) 
+
+# Check NAs
+sum(is.na(swed_dead.2))
+sum(is.na(swed_expo.2))
+
+# All together now!
+swed.data <- left_join(swed_dead.2, swed_expo.2, by = c("Age","Year"))
+
+glimpse(swed.data)
+
+
+##### Q1. Fit a Makeham model on data in 1950 from age 30 to age 90 #####
+
+
+
+
+
+
+
