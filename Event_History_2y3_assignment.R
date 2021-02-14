@@ -301,7 +301,7 @@ make.mle <- optim(para,
                   Age=swed.data.3090$Age, Death=swed.data.3090$Deaths, 
                   Exposure=swed.data.3090$Exposure, 
                   control=list(fnscale=-1),
-                  hessian = T,
+                  #hessian = T,
                   method="BFGS")
 
 make.mle
