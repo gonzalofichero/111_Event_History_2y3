@@ -2,6 +2,8 @@
 library(tidyverse)
 library(survival)
 library(stargazer)
+library(survminer)
+library(wesanderson)
 
 
 
@@ -338,6 +340,41 @@ c(c_hat - 1.96*se.c , c_hat + 1.96*se.c)
 
 
 ##### Q3. Plot estimated rates in 1950 along with the fitted rates from !1 and the 95% confidence interval #####
+
+
+
+
+
+#### Exercise 4 ####
+
+##### Importing data #####
+blind <- read.table("BlindData.csv", header = T)
+
+glimpse(blind)
+
+
+##### Q1. Read in the data and produce the Kaplan-Maier estimators of the survival curves for the four groups in the data. ##### 
+# Which group has the lowest risk of experiencing blindness?
+# Would you accept the proportionality assumptions?
+
+######  Creating Survival object with censoring ######  
+blind.surv <- Surv(time=blind$Time, event=blind$Status)
+
+###### Kaplan-Meier fitting for 4 groups (Diabetes + Treatment) ###### 
+KM <- survfit(blind.surv ~ Diabetes + Treatment , data=blind)
+
+###### Plotting K-P curves ######
+ggsurvplot(KM, data = blind, pval = F,
+           legend.title = "Groups:",
+           legend.labs = c("D=0, T=0", "D=0, T=1", "D=1, T=0", "D=1, T=1"),
+           risk.table = TRUE,
+           tables.height = 0.2,
+           tables.theme = theme_cleantable(),
+           palette = wes_palette(n=4, name="Darjeeling1"),
+           ggtheme = theme_bw()
+           )
+
+
 
 
 
