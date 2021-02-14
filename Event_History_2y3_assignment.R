@@ -273,9 +273,71 @@ glimpse(swed.data)
 
 ##### Q1. Fit a Makeham model on data in 1950 from age 30 to age 90 #####
 
+# LogLikelihood function for Makeham
+lnLmakeham <- function(para, Age, Death, Exposure){
+  # parameters
+  a <- para[1]
+  b <- para[2]
+  c <- para[3]
+  mu <- (c + a * exp(b * Age))
+  llk <- sum(Death * log(mu) - mu * Exposure)
+  return(llk)
+}
+
+
+# Initial point
+para <- c(0.00002, 0.1, 0.0001)
+set.seed(42)
+
+# Let's just keep the 30 to 90 years old people, only 1950
+swed.data.3090 <- swed.data %>% filter(Age >= 30, Age <= 90, Year == "1950") %>% select(-Year)
+
+
+# Optimization
+make.mle <- optim(para,
+                  lnLmakeham,
+                  Age=swed.data.3090$Age, Death=swed.data.3090$Deaths, 
+                  Exposure=swed.data.3090$Exposure, 
+                  control=list(fnscale=-1),
+                  hessian = T,
+                  method="BFGS")
+
+make.mle
+
+##### Q2. Create a table with estimated parameters from Q1 and associated 95% confidence intervals #####
+
+# Optimized a is
+a_hat <- make.mle$par[1]
+
+# Optimized b is
+b_hat <- make.mle$par[2]
+
+# Optimized b is
+c_hat <- make.mle$par[3]
+
+
+# Build variance-covariance from Hessian 
+V <- solve(-make.mle$hessian)      # inverse of negative Hessian
+
+
+#  square root of diagonal elements are the s.e. of a and b and c
+sqrt(diag(V))
+# parameter estimates correlated?
+cov2cor(V)
+
+# CI for a and b (assuming 1-alpha=95%)
+se.a <- sqrt(diag(V))[1]
+se.b <- sqrt(diag(V))[2]
+se.c <- sqrt(diag(V))[3]
+
+# Confidence intervals for both a and b (estimated) for Weibull function
+c(a_hat - 1.96*se.a , a_hat + 1.96*se.a) 
+c(b_hat - 1.96*se.b , b_hat + 1.96*se.b) 
+c(c_hat - 1.96*se.c , c_hat + 1.96*se.c)
 
 
 
+##### Q3. Plot estimated rates in 1950 along with the fitted rates from !1 and the 95% confidence interval #####
 
 
 
