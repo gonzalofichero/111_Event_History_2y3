@@ -517,17 +517,17 @@ haz_cohort4 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+3]
 plot(1, 1, t="n", ylim = range(haz_cohort1, haz_cohort2, haz_cohort3, haz_cohort4), xlim = range(tauj2), ylab = "log[h(t)]", xlab = "t")
 for (i in 1:length(haz_cohort1)) {
   segments(x0=tauj2[i], y0=haz_cohort1[i], x1=tauj2[i+1], y1=haz_cohort1[i], lwd = 2, col = 1, lty = 1)
-  segments(x0=tauj2[i], y0=haz_cohort2[i], x1=tauj2[i+1], y1=haz_cohort2[i], lwd = 2, col = 2, lty = 3)
-  segments(x0=tauj2[i], y0=haz_cohort3[i], x1=tauj2[i+1], y1=haz_cohort3[i], lwd = 2, col = 3, lty = 3)
-  segments(x0=tauj2[i], y0=haz_cohort4[i], x1=tauj2[i+1], y1=haz_cohort4[i], lwd = 2, col = 4, lty = 3)
+  segments(x0=tauj2[i], y0=haz_cohort2[i], x1=tauj2[i+1], y1=haz_cohort2[i], lwd = 2, col = 2, lty = 2)
+  segments(x0=tauj2[i], y0=haz_cohort3[i], x1=tauj2[i+1], y1=haz_cohort3[i], lwd = 2, col = 3, lty = 2)
+  segments(x0=tauj2[i], y0=haz_cohort4[i], x1=tauj2[i+1], y1=haz_cohort4[i], lwd = 2, col = 4, lty = 2)
 }
-abline(v=6, lty=2) # lines to mark cut points 
-abline(v=15, lty=2)
-abline(v=25, lty=2)
-abline(v=40, lty=2)
-abline(v=50, lty=2)
+abline(v=6, lty=3) # lines to mark cut points 
+abline(v=15, lty=3)
+abline(v=25, lty=3)
+abline(v=40, lty=3)
+abline(v=50, lty=3)
 legend("bottomright", legend = c("Baseline", "Baseline + Treatment", 
-                              "Baseline + Diabetes", "Baseline + T&D"), col = 1:4, lty = c(1,3,3,3), lwd = 2) 
+                              "Baseline + Diabetes", "Baseline + T&D"), col = 1:4, lty = c(1,2,2,2), lwd = 2) 
 
 
 
