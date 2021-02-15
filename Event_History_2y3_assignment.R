@@ -510,7 +510,7 @@ M <- 6
 haz_cohort1 <- mTDint$coefficients[1:M]
 haz_cohort2 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+1]
 haz_cohort3 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+2]
-haz_cohort4 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+3]
+haz_cohort4 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+1] + mTDint$coefficients[M+2] + mTDint$coefficients[M+3]
 
 
 # Plot the log-hazard over age for each of the three cohorts
@@ -527,7 +527,7 @@ abline(v=25, lty=3)
 abline(v=40, lty=3)
 abline(v=50, lty=3)
 legend("bottomright", legend = c("Baseline", "Baseline + Treatment", 
-                              "Baseline + Diabetes", "Baseline + T&D"), col = 1:4, lty = c(1,2,2,2), lwd = 2) 
+                              "Baseline + Diabetes", "Baseline + T*D"), col = 1:4, lty = c(1,2,2,2), lwd = 2) 
 
 
 
