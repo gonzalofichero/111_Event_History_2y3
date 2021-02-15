@@ -507,9 +507,13 @@ stargazer(fit1.blind, mT, mD, mTD, mTDint)
 # Define tauj and the hazards for each cohort
 tauj2 <- c(0,tauj)
 M <- 6
+# Baseline: only interval + intercept
 haz_cohort1 <- mTDint$coefficients[1:M]
+# Adding Treatment, No Diabetes:
 haz_cohort2 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+1]
+# Adding Diabetes, No Treatment:
 haz_cohort3 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+2]
+# Adding Diabetes, Treatment & the interaction:
 haz_cohort4 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+1] + mTDint$coefficients[M+2] + mTDint$coefficients[M+3]
 
 
