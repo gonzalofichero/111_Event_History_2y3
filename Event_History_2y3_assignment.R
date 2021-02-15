@@ -462,13 +462,47 @@ blind2$interval <- as.factor(blind2$interval)
 # Can you reject the hypothesis, that the hazard is constant overall?
 
 # Fitting the Poisson model
-fit1.blind <- glm(delta ~ 1, family=poisson, data=blind2)
+fit1.blind <- glm(Status ~ 1, offset = log(y.new), family=poisson, data=blind2)
 summary(fit1.blind)
 
 anova(fit1.blind,test="Chisq")
 
 
 ##### Q4. Now build and estimate the following models: ##### 
+# mT: Treatment
+# mD: Diabetes
+# mTD: Treatment + Diabetes
+# mTDint: Treatment * Diabetes
+
+###### Running regression models ######
+mT <- glm(Status ~ Treatment, offset = log(y.new), family=poisson, data=blind2)
+mD <- glm(Status ~ Diabetes, offset = log(y.new), family=poisson, data=blind2)
+mTD <- glm(Status ~ Treatment + Diabetes, offset = log(y.new), family=poisson, data=blind2)
+mTDint <- glm(Status ~ Treatment * Diabetes, offset = log(y.new), family=poisson, data=blind2)
+
+###### Check regression summary ######
+summary(mT)
+summary(mD)
+summary(mTD)
+summary(mTDint)
+
+stargazer(fit1.blind, mT, mD, mTD, mTDint)
+
+###### ANOVA for 4 models ######
+anova(mT, mTD, test="Chisq")
+anova(mD, mTD, test="Chisq")
+anova(mTD, mTDint, test="Chisq")
+
+###### AIC 4 models ######
+AIC(mT, mD, mTD, mTDint)
+
+
+###### All regression together in 1 table ######
+stargazer(fit1.blind, mT, mD, mTD, mTDint)
+
+
+###### Plotting loghazard 4 models ######
+
 
 
 
