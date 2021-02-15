@@ -462,7 +462,7 @@ blind2$interval <- as.factor(blind2$interval)
 # Can you reject the hypothesis, that the hazard is constant overall?
 
 # Fitting the Poisson model
-fit1.blind <- glm(Status ~ 1, offset = log(y.new), family=poisson, data=blind2)
+fit1.blind <- glm(Status ~ interval, offset = log(y.new), family=poisson, data=blind2)
 summary(fit1.blind)
 
 anova(fit1.blind,test="Chisq")
@@ -475,10 +475,10 @@ anova(fit1.blind,test="Chisq")
 # mTDint: Treatment * Diabetes
 
 ###### Running regression models ######
-mT <- glm(Status ~ Treatment, offset = log(y.new), family=poisson, data=blind2)
-mD <- glm(Status ~ Diabetes, offset = log(y.new), family=poisson, data=blind2)
-mTD <- glm(Status ~ Treatment + Diabetes, offset = log(y.new), family=poisson, data=blind2)
-mTDint <- glm(Status ~ Treatment * Diabetes, offset = log(y.new), family=poisson, data=blind2)
+mT <- glm(Status ~ interval + Treatment, offset = log(y.new), family=poisson, data=blind2)
+mD <- glm(Status ~ interval + Diabetes, offset = log(y.new), family=poisson, data=blind2)
+mTD <- glm(Status ~ interval + Treatment + Diabetes, offset = log(y.new), family=poisson, data=blind2)
+mTDint <- glm(Status ~ interval + Treatment * Diabetes, offset = log(y.new), family=poisson, data=blind2)
 
 ###### Check regression summary ######
 summary(mT)
@@ -489,20 +489,45 @@ summary(mTDint)
 stargazer(fit1.blind, mT, mD, mTD, mTDint)
 
 ###### ANOVA for 4 models ######
+anova(fit1.blind, mT, test="Chisq")
+anova(fit1.blind, mD, test="Chisq")
 anova(mT, mTD, test="Chisq")
 anova(mD, mTD, test="Chisq")
 anova(mTD, mTDint, test="Chisq")
 
 ###### AIC 4 models ######
-AIC(mT, mD, mTD, mTDint)
+AIC(fit1.blind, mT, mD, mTD, mTDint)
 
 
 ###### All regression together in 1 table ######
 stargazer(fit1.blind, mT, mD, mTD, mTDint)
 
 
-###### Plotting loghazard 4 models ######
+###### Plotting loghazard interaction model ######
+# Define tauj and the hazards for each cohort
+tauj2 <- c(0,tauj)
+M <- 6
+haz_cohort1 <- mTDint$coefficients[1:M]
+haz_cohort2 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+1]
+haz_cohort3 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+2]
+haz_cohort4 <- mTDint$coefficients[1:M] + mTDint$coefficients[M+3]
 
+
+# Plot the log-hazard over age for each of the three cohorts
+plot(1, 1, t="n", ylim = range(haz_cohort1, haz_cohort2, haz_cohort3, haz_cohort4), xlim = range(tauj2), ylab = "log[h(t)]", xlab = "t")
+for (i in 1:length(haz_cohort1)) {
+  segments(x0=tauj2[i], y0=haz_cohort1[i], x1=tauj2[i+1], y1=haz_cohort1[i], lwd = 2, col = 1, lty = 1)
+  segments(x0=tauj2[i], y0=haz_cohort2[i], x1=tauj2[i+1], y1=haz_cohort2[i], lwd = 2, col = 2, lty = 3)
+  segments(x0=tauj2[i], y0=haz_cohort3[i], x1=tauj2[i+1], y1=haz_cohort3[i], lwd = 2, col = 3, lty = 3)
+  segments(x0=tauj2[i], y0=haz_cohort4[i], x1=tauj2[i+1], y1=haz_cohort4[i], lwd = 2, col = 4, lty = 3)
+}
+abline(v=6, lty=2) # lines to mark cut points 
+abline(v=15, lty=2)
+abline(v=25, lty=2)
+abline(v=40, lty=2)
+abline(v=50, lty=2)
+legend("bottomright", legend = c("Baseline", "Baseline + Treatment", 
+                              "Baseline + Diabetes", "Baseline + T&D"), col = 1:4, lty = c(1,3,3,3), lwd = 2) 
 
 
 
