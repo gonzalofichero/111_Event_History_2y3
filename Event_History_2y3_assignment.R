@@ -444,5 +444,31 @@ ggsurvplot(KM, data = blind, pval = F,
 
 
 
+##### Q2. Build a data frame that is appropriate for an analysis assuming a Piece-Wise Constant Hazard model. ##### 
+
+# Splitting the data
+tauj <- c(6,15,25,40,50,80)
+blind2 <- survSplit(blind, cut=tauj, end="Time", start="start",
+                   event="Status", episode="interval")
+
+# We need to create the new variable: length spent by each individual in each interval
+blind2$y.new <- blind2$Time - blind2$start
+blind2$interval <- as.factor(blind2$interval)
+
+
+
+##### Q3. Estimate a model for the hazard without any further covariates. ##### 
+
+# Can you reject the hypothesis, that the hazard is constant overall?
+
+# Fitting the Poisson model
+fit1.blind <- glm(delta ~ 1, family=poisson, data=blind2)
+summary(fit1.blind)
+
+anova(fit1.blind,test="Chisq")
+
+
+##### Q4. Now build and estimate the following models: ##### 
+
 
 
