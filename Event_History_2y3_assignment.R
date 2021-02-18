@@ -191,7 +191,7 @@ for(i in 2:nrow(students)){
 
 
 st3 <- as.data.frame(st2)
-names(st3) <- c("id","quarter","sex","subj","quarter","event")
+names(st3) <- c("id","quarter","sex","subj","quarter2","event")
 head(st3)
 
 # Check
@@ -206,15 +206,15 @@ glimpse(st3)
 
 st3$subj <- as.factor(st3$subj)
 st3$sex <- as.factor(st3$sex)
-st3$quarter <- as.factor(st3$quarter)
+st3$quarter2 <- as.factor(st3$quarter2)
 
 ###### Logistic Regression ######
-logistic <- glm(event ~ quarter + sex*subj,
+logistic <- glm(event ~ quarter2 + sex*subj,
                 family = binomial,
                 data = st3)
 
 ###### CLogLog Regression ######
-cloglog <- glm(event ~ quarter + sex*subj,
+cloglog <- glm(event ~ quarter2 + sex*subj,
                family = binomial(link=cloglog),
                data = st3)
 
@@ -239,8 +239,11 @@ h2 <- c(cloglog$coef[1],
         cloglog$coef[1] + cloglog$coef[2:8])
 h2 <- 1 - exp(-exp(h2))
 
+
+
+
 plot(x,h1,col=1, pch=1,
-     ylim = c(0,0.55),
+     #ylim = c(0,0.55),
      xlab = "time", ylab="discrete hazard",main="hazard comparison")
 points(h2,col=2,pch=2)
 
@@ -533,5 +536,26 @@ abline(v=50, lty=3)
 legend("bottomright", legend = c("Baseline", "Baseline + Treatment", 
                               "Baseline + Diabetes", "Baseline + T*D"), col = 1:4, lty = c(1,2,2,2), lwd = 2) 
 
+
+
+##### Q5. Estimate a Cox PH model using the selected set of covariates from the previous task ##### 
+
+###### Adding 0s as starting point for Cox ###### 
+blind2$entry <- 0
+
+###### Survival object ###### 
+surv.dat <- Surv(time = blind2$entry,
+                 time2 = blind2$Time,
+                 event = blind2$Status)
+
+###### Cox modeling ###### 
+cox.blind <- coxph(surv.dat ~ Treatment * Diabetes, data=blind2)
+
+
+###### Comparing PC model with interaction vs Cox model ######
+summary(mTDint)
+summary(cox.blind)
+
+AIC(mTDint, cox.blind)
 
 
