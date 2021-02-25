@@ -559,3 +559,18 @@ summary(cox.blind)
 AIC(mTDint, cox.blind)
 
 
+##### Q6. Do you see any of the main assumptions underlying both models not holding? Would you treat these data differently? ##### 
+
+# Using Jutta's code for checking proportion + linearity assumptions in Cox model
+
+###### Proportionality ###### 
+
+prop.blind <- cox.zph(cox.blind, transform="identity")
+prop.blind
+
+# Proportionality holds
+
+###### Linearity ######
+
+# No numerical features in this data model
+
