@@ -244,7 +244,7 @@ h2 <- 1 - exp(-exp(h2))
 
 plot(x,h1,col=1, pch=1,
      #ylim = c(0,0.55),
-     xlab = "time", ylab="discrete hazard",main="hazard comparison")
+     xlab = "time (quarters)", ylab="discrete hazard",main="hazard comparison")
 points(h2,col=2,pch=2)
 
 
