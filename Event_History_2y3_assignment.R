@@ -557,12 +557,8 @@ legend("bottomright", legend = c("Baseline", "Baseline + Treatment",
 
 ##### Q5. Estimate a Cox PH model using the selected set of covariates from the previous task ##### 
 
-###### Adding 0s as starting point for Cox ###### 
-blind2$entry <- 0
-
 ###### Survival object ###### 
-surv.dat <- Surv(time = blind2$entry,
-                 time2 = blind2$Time,
+surv.dat <- Surv(time = blind2$Time,
                  event = blind2$Status)
 
 ###### Cox modeling ###### 
